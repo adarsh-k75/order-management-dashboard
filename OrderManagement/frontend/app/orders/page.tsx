@@ -143,9 +143,15 @@ export default function OrdersPage() {
     setIsSaving(true);
     setError(null);
     try {
-      await orderService.updateOrderStatus(selectedOrder.id, updateStatusVal);
+      const updatedOrder = await orderService.updateOrderStatus(selectedOrder.id, updateStatusVal);
+      // Update local state directly so it updates instantly in the UI
+      setOrders((prev) =>
+        prev.map((order) => (order.id === updatedOrder.id ? updatedOrder : order))
+      );
       setIsStatusOpen(false);
       setSelectedOrder(null);
+      // Re-fetch to ensure filters, pagination, and sorting are perfectly sync'd
+      fetchOrders();
     } catch (err: any) {
       console.error(err);
       setError(err.response?.data?.message || 'Failed to update order status');
@@ -162,8 +168,13 @@ export default function OrdersPage() {
     setError(null);
     try {
       await orderService.deleteOrder(selectedOrder.id);
+      // Update local state directly so it updates instantly in the UI
+      setOrders((prev) => prev.filter((order) => order.id !== selectedOrder.id));
+      setTotal((prev) => Math.max(0, prev - 1));
       setIsDeleteOpen(false);
       setSelectedOrder(null);
+      // Re-fetch to ensure filters, pagination, and sorting are perfectly sync'd
+      fetchOrders();
     } catch (err: any) {
       console.error(err);
       setError(err.response?.data?.message || 'Failed to delete order');
