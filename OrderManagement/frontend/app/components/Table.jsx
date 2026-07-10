@@ -65,7 +65,7 @@ export function Table({
           </tr>
         </thead>
         <tbody className="divide-y divide-slate-100 text-sm text-slate-600 font-normal">
-          {children} {/* Tr rows are passed in as children */}
+          {children}
         </tbody>
       </table>
     </div>
