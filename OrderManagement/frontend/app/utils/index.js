@@ -1,7 +1,7 @@
 /**
  * Format numeric amount into INR currency styling (₹)
  */
-export const formatINR = (amount: number): string => {
+export const formatINR = (amount) => {
   return new Intl.NumberFormat('en-IN', {
     style: 'currency',
     currency: 'INR',
@@ -13,7 +13,7 @@ export const formatINR = (amount: number): string => {
 /**
  * Format numeric amount into USD currency styling ($)
  */
-export const formatUSD = (amount: number): string => {
+export const formatUSD = (amount) => {
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency: 'USD',
@@ -25,7 +25,7 @@ export const formatUSD = (amount: number): string => {
 /**
  * Format date string into a readable representation (e.g., Jul 9, 2026, 05:15 PM)
  */
-export const formatDate = (dateString: string): string => {
+export const formatDate = (dateString) => {
   if (!dateString) return '-';
   try {
     const date = new Date(dateString);

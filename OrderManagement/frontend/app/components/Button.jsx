@@ -1,12 +1,10 @@
 import React from 'react';
 
-interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'outline' | 'danger';
-  size?: 'sm' | 'md' | 'lg';
-  isLoading?: boolean;
-}
-
-export const Button: React.FC<ButtonProps> = ({
+/**
+ * A customizable, reusable Button component.
+ * Handles primary, secondary, outline, and danger variants, loading state, sizes, and normal button HTML attributes.
+ */
+export function Button({
   children,
   variant = 'primary',
   size = 'md',
@@ -14,9 +12,11 @@ export const Button: React.FC<ButtonProps> = ({
   className = '',
   disabled,
   ...props
-}) => {
+}) {
+  // Base CSS classes shared by all buttons
   const baseStyle = 'inline-flex items-center justify-center font-medium rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none';
   
+  // Design variations matching Finpay design system
   const variants = {
     primary: 'bg-teal-600 hover:bg-teal-700 text-white hover:shadow-md hover:shadow-teal-600/10 focus:ring-teal-500',
     secondary: 'bg-slate-100 hover:bg-slate-200 text-slate-700 focus:ring-slate-300',
@@ -24,6 +24,7 @@ export const Button: React.FC<ButtonProps> = ({
     danger: 'bg-rose-500 hover:bg-rose-600 text-white hover:shadow-md hover:shadow-rose-600/10 focus:ring-rose-500',
   };
 
+  // Button sizes
   const sizes = {
     sm: 'px-3 py-1.5 text-xs',
     md: 'px-4 py-2.5 text-sm',
@@ -34,8 +35,9 @@ export const Button: React.FC<ButtonProps> = ({
     <button
       className={`${baseStyle} ${variants[variant]} ${sizes[size]} ${className}`}
       disabled={disabled || isLoading}
-      {...props}
+      {...props} // Pass standard HTML button props like onClick, type, etc.
     >
+      {/* Show dynamic spinner when isLoading is true */}
       {isLoading && (
         <svg
           className="animate-spin -ml-1 mr-2 h-4 w-4 text-current"
@@ -54,4 +56,4 @@ export const Button: React.FC<ButtonProps> = ({
       {children}
     </button>
   );
-};
+}

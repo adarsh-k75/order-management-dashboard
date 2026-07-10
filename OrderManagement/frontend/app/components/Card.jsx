@@ -1,22 +1,17 @@
 import React from 'react';
 
-interface CardProps {
-  title: string;
-  value: string | number;
-  description?: string;
-  icon?: React.ReactNode;
-  accentColor?: string;
-  onClick?: () => void;
-}
-
-export const Card: React.FC<CardProps> = ({
+/**
+ * A standard, easy-to-read metric Card component.
+ * Displays a title, a large value, helper description, an icon, and accepts an onClick callback.
+ */
+export function Card({
   title,
   value,
   description,
   icon,
   accentColor = 'border-slate-100',
   onClick,
-}) => {
+}) {
   return (
     <div
       onClick={onClick}
@@ -24,6 +19,7 @@ export const Card: React.FC<CardProps> = ({
         onClick ? 'cursor-pointer hover:shadow-md hover:border-slate-200 hover:-translate-y-0.5' : ''
       }`}
     >
+      {/* 1. Header (Title and Icon) */}
       <div className="flex items-center justify-between mb-4">
         <span className="text-sm font-medium text-slate-500">{title}</span>
         {icon && (
@@ -33,6 +29,7 @@ export const Card: React.FC<CardProps> = ({
         )}
       </div>
       
+      {/* 2. Main Metric Content */}
       <div>
         <h3 className="text-3xl font-bold text-slate-800 tracking-tight leading-none">
           {value}
@@ -44,8 +41,8 @@ export const Card: React.FC<CardProps> = ({
         )}
       </div>
       
-      {/* Dynamic Accent strip */}
+      {/* 3. Bottom Accent border line */}
       <div className={`mt-4 border-b-2 rounded-full ${accentColor}`} />
     </div>
   );
-};
+}

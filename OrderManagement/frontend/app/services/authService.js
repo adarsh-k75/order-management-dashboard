@@ -1,12 +1,11 @@
 import api from './api';
-import { APIResponse, UserLogin } from '../types';
 
 export const authService = {
   /**
    * Log in user using credentials, save token to localStorage, and return data.
    */
-  login: async (credentials: UserLogin): Promise<{ token: string; username: string }> => {
-    const response = await api.post<APIResponse>('/login', credentials);
+  login: async (credentials) => {
+    const response = await api.post('/login', credentials);
     const { success, data } = response.data;
     
     if (success && data?.access_token) {
@@ -21,7 +20,7 @@ export const authService = {
   /**
    * Remove tokens and sign out user.
    */
-  logout: (): void => {
+  logout: () => {
     localStorage.removeItem('token');
     localStorage.removeItem('username');
     if (typeof window !== 'undefined') {
@@ -32,7 +31,7 @@ export const authService = {
   /**
    * Check if authentication token exists in local storage.
    */
-  isAuthenticated: (): boolean => {
+  isAuthenticated: () => {
     if (typeof window === 'undefined') return false;
     return !!localStorage.getItem('token');
   },
@@ -40,7 +39,7 @@ export const authService = {
   /**
    * Fetch current session username.
    */
-  getUsername: (): string | null => {
+  getUsername: () => {
     if (typeof window === 'undefined') return null;
     return localStorage.getItem('username');
   }

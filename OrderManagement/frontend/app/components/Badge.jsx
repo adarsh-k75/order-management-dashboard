@@ -1,11 +1,11 @@
 import React from 'react';
-import { OrderStatus } from '../types';
 
-interface BadgeProps {
-  status: OrderStatus;
-}
-
-export const Badge: React.FC<BadgeProps> = ({ status }) => {
+/**
+ * A simple Badge component that color-codes orders based on their status.
+ * Status can be: 'Pending', 'Processing', 'Completed', 'Cancelled'.
+ */
+export function Badge({ status }) {
+  // Returns different color styles depending on the order status
   const getColors = () => {
     switch (status) {
       case 'Pending':
@@ -28,4 +28,4 @@ export const Badge: React.FC<BadgeProps> = ({ status }) => {
       {status}
     </span>
   );
-};
+}

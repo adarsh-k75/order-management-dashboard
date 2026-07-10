@@ -6,12 +6,7 @@ import { authService } from '../services/authService';
 import { Navbar } from './Navbar';
 import { Sidebar } from './Sidebar';
 
-interface AppLayoutProps {
-  children: React.ReactNode;
-  wsConnected?: boolean;
-}
-
-export const AppLayout: React.FC<AppLayoutProps> = ({ children, wsConnected = false }) => {
+export const AppLayout = ({ children, wsConnected = false }) => {
   const router = useRouter();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);

@@ -2,19 +2,19 @@
 
 import React, { useEffect, useState, useCallback } from 'react';
 import { AppLayout } from '../components/AppLayout';
-import { Table, ColumnHeader } from '../components/Table';
+import { Table } from '../components/Table';
 import { Badge } from '../components/Badge';
 import { Input } from '../components/Input';
 import { Button } from '../components/Button';
 import { Modal } from '../components/Modal';
 import { orderService } from '../services/orderService';
 import { useWebSocket } from '../hooks/useWebSocket';
-import { Order, OrderStatus } from '../types';
 import { formatINR, formatUSD, formatDate } from '../utils';
 
 export default function OrdersPage() {
-  // State for search, filter, sorting, pagination
-  const [orders, setOrders] = useState<Order[]>([]);
+  // 1. React state declarations: store dynamic page values.
+  // Updates to these values automatically trigger visual updates on the page.
+  const [orders, setOrders] = useState([]);
   const [total, setTotal] = useState(0);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
@@ -25,27 +25,28 @@ export default function OrdersPage() {
   // Loading, saving, error states
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState(null);
 
-  // Modals state
+  // Modals visibility states
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isStatusOpen, setIsStatusOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
 
-  // Active target for update/delete actions
-  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  // Tracks the order item currently being modified or deleted
+  const [selectedOrder, setSelectedOrder] = useState(null);
 
-  // Form states
+  // State bindings for input forms
   const [customerName, setCustomerName] = useState('');
   const [amount, setAmount] = useState('');
-  const [updateStatusVal, setUpdateStatusVal] = useState<OrderStatus>('Pending');
+  const [updateStatusVal, setUpdateStatusVal] = useState('Pending');
 
-  // Fetch orders from API
+  // 2. Fetch orders from Backend API
+  // useCallback is used to memoize this function, preventing unnecessary re-creations.
   const fetchOrders = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     try {
-      const skip = (currentPage - 1) * limit;
+      const skip = (currentPage - 1) * limit; // pagination offset
       const data = await orderService.getOrders({
         search: search.trim() || undefined,
         status_filter: statusFilter || undefined,
@@ -55,7 +56,7 @@ export default function OrdersPage() {
       });
       setOrders(data.orders);
       setTotal(data.total);
-    } catch (err: any) {
+    } catch (err) {
       console.error(err);
       setError('Could not retrieve orders. Please check your network connection.');
     } finally {
@@ -63,31 +64,34 @@ export default function OrdersPage() {
     }
   }, [currentPage, search, statusFilter, sort]);
 
+  // 3. useEffect: Automatically runs when dependencies change.
+  // Triggers order list fetch when page, search text, filter status or sorting key changes.
   useEffect(() => {
     fetchOrders();
   }, [fetchOrders]);
 
-  // Adjust page counter if filters change
+  // Adjust page counter if filters change (reset to page 1)
   useEffect(() => {
     setCurrentPage(1);
   }, [search, statusFilter]);
 
-  // WebSocket update handler
+  // 4. WebSocket update handler
+  // Listens for real-time events sent by Python backend to sync records instantly.
   const handleWebSocketMessage = useCallback(
-    (message: { event: string; data: any }) => {
+    (message) => {
       console.log('WS Message received on Orders Manager:', message);
       const { event, data } = message;
 
       if (event === 'order_created') {
-        // Prepend new order if we are on page 1, or re-fetch
+        // Refresh full page list to see new order
         fetchOrders();
       } else if (event === 'order_status_updated') {
-        // Find and update status in state
+        // Update status of matching order directly in the page state
         setOrders((prev) =>
           prev.map((order) => (order.id === data.id ? { ...order, ...data } : order))
         );
       } else if (event === 'order_deleted') {
-        // Filter out from active state
+        // Filter out the deleted order from current page state
         setOrders((prev) => prev.filter((order) => order.id !== data.id));
         setTotal((prev) => Math.max(0, prev - 1));
       }
@@ -98,7 +102,7 @@ export default function OrdersPage() {
   const wsConnected = useWebSocket(handleWebSocketMessage);
 
   // Sort toggle handler
-  const handleSort = (key: string) => {
+  const handleSort = (key) => {
     if (sort === key) {
       setSort(`-${key}`); // reverse
     } else {
@@ -111,7 +115,7 @@ export default function OrdersPage() {
   // ----------------------------------------------------
 
   // Create Order Submission
-  const handleCreateSubmit = async (e: React.FormEvent) => {
+  const handleCreateSubmit = async (e) => {
     e.preventDefault();
     if (!customerName.trim() || !amount) return;
 
@@ -127,7 +131,7 @@ export default function OrdersPage() {
       setAmount('');
       // WebSocket will trigger re-fetch automatically, but re-fetching here ensures consistency
       fetchOrders();
-    } catch (err: any) {
+    } catch (err) {
       console.error(err);
       setError(err.response?.data?.message || 'Failed to create order');
     } finally {
@@ -136,7 +140,7 @@ export default function OrdersPage() {
   };
 
   // Update Status Submission
-  const handleStatusSubmit = async (e: React.FormEvent) => {
+  const handleStatusSubmit = async (e) => {
     e.preventDefault();
     if (!selectedOrder) return;
 
@@ -152,7 +156,7 @@ export default function OrdersPage() {
       setSelectedOrder(null);
       // Re-fetch to ensure filters, pagination, and sorting are perfectly sync'd
       fetchOrders();
-    } catch (err: any) {
+    } catch (err) {
       console.error(err);
       setError(err.response?.data?.message || 'Failed to update order status');
     } finally {
@@ -175,7 +179,7 @@ export default function OrdersPage() {
       setSelectedOrder(null);
       // Re-fetch to ensure filters, pagination, and sorting are perfectly sync'd
       fetchOrders();
-    } catch (err: any) {
+    } catch (err) {
       console.error(err);
       setError(err.response?.data?.message || 'Failed to delete order');
     } finally {
@@ -184,7 +188,7 @@ export default function OrdersPage() {
   };
 
   // Table Headers
-  const columns: ColumnHeader[] = [
+  const columns = [
     { label: 'Customer', key: 'customer_name', sortable: true },
     { label: 'Amount (INR)', key: 'amount', sortable: true },
     { label: 'Amount (USD)', sortable: false },
@@ -410,7 +414,7 @@ export default function OrdersPage() {
               </label>
               <select
                 value={updateStatusVal}
-                onChange={(e) => setUpdateStatusVal(e.target.value as OrderStatus)}
+                onChange={(e) => setUpdateStatusVal(e.target.value)}
                 className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50/50 text-slate-800 placeholder-slate-400 focus:outline-none focus:bg-white focus:ring-2 focus:ring-teal-500/10 focus:border-teal-600 text-sm transition-all duration-200"
                 disabled={isSaving}
               >

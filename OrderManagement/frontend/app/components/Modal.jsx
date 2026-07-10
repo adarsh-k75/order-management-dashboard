@@ -1,35 +1,34 @@
 import React, { useEffect } from 'react';
-import { Button } from './Button';
 
-interface ModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  title: string;
-  children: React.ReactNode;
-  size?: 'sm' | 'md' | 'lg';
-}
-
-export const Modal: React.FC<ModalProps> = ({
+/**
+ * A standard Dialog Modal component.
+ * Displays a popup over a blurred backdrop, locks page scroll, and triggers onClose on overlay click.
+ */
+export function Modal({
   isOpen,
   onClose,
   title,
   children,
   size = 'md',
-}) => {
-  // Prevent page scroll when modal is active
+}) {
+  // Lock or unlock body scrolling when modal is open or closed
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = 'unset';
     }
+    
+    // Clean up effect on unmount to make sure body scroll is restored
     return () => {
       document.body.style.overflow = 'unset';
     };
   }, [isOpen]);
 
+  // If the modal isn't open, don't render anything
   if (!isOpen) return null;
 
+  // Max width mapping based on 'size' prop
   const maxW = {
     sm: 'max-w-md',
     md: 'max-w-lg',
@@ -38,17 +37,17 @@ export const Modal: React.FC<ModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      {/* Backdrop */}
+      {/* 1. Backdrop overlay */}
       <div
         className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity duration-300"
-        onClick={onClose}
+        onClick={onClose} // Close modal if user clicks outside
       />
 
-      {/* Modal Card */}
+      {/* 2. Modal Card Container */}
       <div
-        className={`relative bg-white w-full ${maxW[size]} rounded-2xl shadow-xl border border-slate-100 flex flex-col max-h-[90vh] overflow-hidden transform transition-all duration-300 animate-in fade-in-50 zoom-in-95 slide-in-from-bottom-4`}
+        className={`relative bg-white w-full ${maxW[size]} rounded-2xl shadow-xl border border-slate-100 flex flex-col max-h-[90vh] overflow-hidden transform transition-all duration-300`}
       >
-        {/* Header */}
+        {/* Header (Title and Close button) */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
           <h3 className="text-base font-bold text-slate-800 uppercase tracking-wider">
             {title}
@@ -69,11 +68,11 @@ export const Modal: React.FC<ModalProps> = ({
           </button>
         </div>
 
-        {/* Content */}
+        {/* Content body */}
         <div className="flex-1 overflow-y-auto p-6 text-sm text-slate-600">
           {children}
         </div>
       </div>
     </div>
   );
-};
+}

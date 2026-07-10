@@ -7,23 +7,29 @@ import { Input } from '../components/Input';
 import { Button } from '../components/Button';
 
 export default function LoginPage() {
+  // 1. useRouter: Next.js router instance to programmatically redirect users to other pages
   const router = useRouter();
+
+  // 2. useState: Component state hooks to track inputs and errors
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  // If already authenticated, redirect straight to dashboard
+  // 3. useEffect: Runs on initial page load.
+  // If the user has a valid login token stored, they are immediately redirected to the dashboard.
   useEffect(() => {
     if (authService.isAuthenticated()) {
       router.push('/dashboard');
     }
   }, [router]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  // 4. handleSubmit: Triggered when the login form is submitted
+  const handleSubmit = async (e) => {
+    e.preventDefault(); // Stop page from refreshing on form submit
     setError(null);
 
+    // Form validation check
     if (!username.trim() || !password.trim()) {
       setError('Please fill in all fields');
       return;
@@ -31,9 +37,12 @@ export default function LoginPage() {
 
     setIsLoading(true);
     try {
+      // Send login request to python backend
       await authService.login({ username: username.trim(), password });
+      
+      // Redirect user to the main dashboard after successful login
       router.push('/dashboard');
-    } catch (err: any) {
+    } catch (err) {
       console.error(err);
       setError(err.response?.data?.message || err.message || 'Incorrect credentials');
     } finally {

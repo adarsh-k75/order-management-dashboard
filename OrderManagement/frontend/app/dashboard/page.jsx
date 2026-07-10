@@ -7,32 +7,35 @@ import { Card } from '../components/Card';
 import { Badge } from '../components/Badge';
 import { orderService } from '../services/orderService';
 import { useWebSocket } from '../hooks/useWebSocket';
-import { Order, OrderStats } from '../types';
 import { formatINR, formatUSD, formatDate } from '../utils';
 
 export default function DashboardPage() {
-  const [stats, setStats] = useState<OrderStats>({
+  // 1. useState: React state hooks to store dynamic data.
+  // When these states change, React automatically updates the page interface.
+  const [stats, setStats] = useState({
     total: 0,
     pending: 0,
     processing: 0,
     completed: 0,
     cancelled: 0,
   });
-  const [recentOrders, setRecentOrders] = useState<Order[]>([]);
+  const [recentOrders, setRecentOrders] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState(null);
 
-  // Fetch stats and recent orders
+  // 2. useCallback: Memoizes (saves) this function so it does not get recreated on every component render.
+  // This is a performance optimization, especially when passing the function to child components.
   const fetchData = useCallback(async () => {
     try {
       setError(null);
+      // Promise.all runs multiple asynchronous api requests in parallel for better speed.
       const [statsData, ordersData] = await Promise.all([
         orderService.getOrderStats(),
         orderService.getOrders({ limit: 5 }),
       ]);
       setStats(statsData);
       setRecentOrders(ordersData.orders);
-    } catch (err: any) {
+    } catch (err) {
       console.error('Failed to load dashboard data:', err);
       setError('Could not retrieve dashboard metrics. Please try again.');
     } finally {
@@ -40,13 +43,15 @@ export default function DashboardPage() {
     }
   }, []);
 
+  // 3. useEffect: Triggers side effects when the component loads (mounts) or dependencies change.
+  // Because the dependency array contains [fetchData], it will run once when the page loads.
   useEffect(() => {
     fetchData();
   }, [fetchData]);
 
   // Handle WebSocket message updates to keep stats and recent orders in real-time sync
   const handleWebSocketMessage = useCallback(
-    (message: { event: string; data: any }) => {
+    (message) => {
       console.log('WS Message received on Dashboard:', message);
       const { event, data } = message;
 
